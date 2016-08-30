@@ -10,6 +10,7 @@ import javax.sql.DataSource;
 
 public class CustomerDAOImpl implements CustomerDAO
 {
+    private DataSource dataSource;
     private Connection connection;
 
     private enum StatementType
@@ -17,9 +18,9 @@ public class CustomerDAOImpl implements CustomerDAO
         QUERY, INSERT, UPDATE, DELETE;
     }
 
-    public CustomerDAOImpl(DataSource dataSource) throws SQLException
+    public CustomerDAOImpl(DataSource dataSource)
     {
-        this.connection = dataSource.getConnection();
+        this.dataSource = dataSource;
     }
 
     @Override
@@ -57,6 +58,8 @@ public class CustomerDAOImpl implements CustomerDAO
 
         try
         {
+            this.connection = dataSource.getConnection();
+            Customer returnCustomer;
             switch (type)
             {
             case QUERY:
@@ -64,17 +67,21 @@ public class CustomerDAOImpl implements CustomerDAO
                 statement.setInt(1, customer.getId());
                 results = statement.executeQuery();
                 results.next();
-                return new Customer(results.getInt(1), results.getString(2), results.getString(3));
+                returnCustomer =  new Customer(results.getInt(1), results.getString(2), results.getString(3));
+                this.connection.close();
+                return returnCustomer;
             case DELETE:
                 statement = this.connection.prepareStatement("DELETE FROM customers WHERE id = ?",
                         Statement.RETURN_GENERATED_KEYS);
                 statement.setInt(1, customer.getId());
                 if(statement.executeUpdate() == 1)
                 {
+                    this.connection.close();
                     return customer;
                 }
                 else
                 {
+                    this.connection.close();
                     return null;
                 }
             case INSERT:
@@ -85,11 +92,7 @@ public class CustomerDAOImpl implements CustomerDAO
                 statement.executeUpdate();
                 results = statement.getGeneratedKeys();
                 results.next();
-                statement = this.connection.prepareStatement("SELECT * FROM customers WHERE id = ?");
-                statement.setInt(1, results.getInt(1));
-                results = statement.executeQuery();
-                results.next();
-                return new Customer(results.getInt(1), results.getString(2), results.getString(3));
+                return read(results.getInt(1));
             case UPDATE:
                 statement = this.connection.prepareStatement("UPDATE customers SET first = ?, last = ? WHERE id = ?",
                         Statement.RETURN_GENERATED_KEYS);
@@ -97,12 +100,9 @@ public class CustomerDAOImpl implements CustomerDAO
                 statement.setString(2, customer.getLastName());
                 statement.setInt(3, customer.getId());
                 statement.executeUpdate();
-                statement = this.connection.prepareStatement("SELECT * FROM customers WHERE id = ?");
-                statement.setInt(1, customer.getId());
-                results = statement.executeQuery();
-                results.next();
-                return new Customer(results.getInt(1), results.getString(2), results.getString(3));
+                return read(customer.getId());
             default:
+                this.connection.close();
                 return null;
             }
 
