@@ -1,6 +1,8 @@
-package org.ssa.ironyard.database;
+package org.ssa.ironyard.model;
 
-public class Customer
+import org.ssa.ironyard.dao.DomainObject;
+
+public class Customer implements DomainObject
 {
     private Integer id;
     private String firstName;

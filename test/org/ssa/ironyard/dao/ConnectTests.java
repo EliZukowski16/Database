@@ -1,4 +1,4 @@
-package org.ssa.ironyard.database;
+package org.ssa.ironyard.dao;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
