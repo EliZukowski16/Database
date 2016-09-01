@@ -31,14 +31,14 @@ public interface CustomerORM extends ORM<Customer>
     {
         return " UPDATE " + table() + " SET first = ?, last = ? WHERE id = ? ";
     }
-
-//    default String prepareDelete()
-//    {
-//        return " DELETE FROM " + table() + " WHERE id = ? ";
-//    }
-//
-//    default String prepareRead()
-//    {
-//        return " SELECT " + projection() + " FROM " + table() + "WHERE id = ? ";
-//    }
+    
+    default String prepareReadCustomersByFirstName()
+    {
+        return prepareSimpleQuery("first");
+    }
+    
+    default String prepareReadCustomersByLastName()
+    {
+        return prepareSimpleQuery("last");
+    }
 }

@@ -1,14 +1,13 @@
 package org.ssa.ironyard.model;
 
-import org.ssa.ironyard.dao.DomainObject;
+import java.math.BigDecimal;
 
 public class Account implements DomainObject
 {
     private final Integer id;
-    private final Integer customerId;
-    private final AccountType type;
-    private final Double balance;
-//    private final Customer customer;
+    private AccountType type;
+    private BigDecimal balance;
+    private Customer customer;
 
     public enum AccountType
     {
@@ -25,20 +24,30 @@ public class Account implements DomainObject
         {
             return accountType;
         }
+
+        public static AccountType getInstance(String accountType)
+        {
+            for(AccountType t: values())
+            {
+                if(t.accountType.equals(accountType))
+                    return t;
+            }
+            return null;
+        }
     }
 
-    public Account(Integer customerId, AccountType type, Double balance)
+    public Account(Customer customer, AccountType type, BigDecimal balance)
     {
         this.id = null;
-        this.customerId = customerId;
+        this.customer = customer;
         this.type = type;
         this.balance = balance;
     }
 
-    public Account(Integer id, Integer customerId, AccountType type, Double balance)
+    public Account(Integer id, Customer customer, AccountType type, BigDecimal balance)
     {
         this.id = id;
-        this.customerId = customerId;
+        this.customer = customer;
         this.type = type;
         this.balance = balance;
     }
@@ -46,7 +55,7 @@ public class Account implements DomainObject
     public Account()
     {
         this.id = null;
-        this.customerId = null;
+        this.customer = new Customer();
         this.type = null;
         this.balance = null;
     }
@@ -56,19 +65,35 @@ public class Account implements DomainObject
         return id;
     }
 
-    public Integer getCustomerId()
+    public Customer getCustomer()
     {
-        return customerId;
+        return customer;
+    }
+    
+    private void setCustomer(Customer customer)
+    {
+        this.customer = customer;
+        
     }
 
     public AccountType getType()
     {
         return type;
     }
+    
+    public void setType(AccountType type)
+    {
+        this.type = type;
+    }
 
-    public Double getBalance()
+    public BigDecimal getBalance()
     {
         return balance;
+    }
+    
+    public void setBalance(BigDecimal balance)
+    {
+        this.balance = balance;
     }
 
     @Override
@@ -77,7 +102,7 @@ public class Account implements DomainObject
         final int prime = 31;
         int result = 1;
         result = prime * result + ((balance == null) ? 0 : balance.hashCode());
-        result = prime * result + ((customerId == null) ? 0 : customerId.hashCode());
+        result = prime * result + ((customer == null) ? 0 : customer.hashCode());
         result = prime * result + ((id == null) ? 0 : id.hashCode());
         result = prime * result + ((type == null) ? 0 : type.hashCode());
         return result;
@@ -117,14 +142,14 @@ public class Account implements DomainObject
             if (other.balance != null)
                 return false;
         }
-        else if (!balance.equals(other.balance))
+        else if (balance.compareTo(other.balance) != 0)
             return false;
-        if (customerId == null)
+        if (customer == null)
         {
-            if (other.customerId != null)
+            if (other.customer != null)
                 return false;
         }
-        else if (!customerId.equals(other.customerId))
+        else if (!customer.equals(other.customer))
             return false;
         if (id == null)
         {
@@ -137,7 +162,24 @@ public class Account implements DomainObject
             return false;
         return true;
     }
-    
-    
 
+    @Override
+    public Account clone()
+    {
+        try
+        {
+            Account copy = (Account) super.clone();
+            copy.setCustomer(this.customer.clone());
+            return copy;
+        }
+        catch(CloneNotSupportedException ex)
+        {
+            return null;
+        }
+    }
+
+
+
+    
+    
 }

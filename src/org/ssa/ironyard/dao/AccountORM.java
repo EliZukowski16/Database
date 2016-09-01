@@ -5,6 +5,7 @@ import java.sql.SQLException;
 
 import org.ssa.ironyard.model.Account;
 import org.ssa.ironyard.model.Account.AccountType;
+import org.ssa.ironyard.model.Customer;
 
 public interface AccountORM extends ORM<Account>
 {   
@@ -20,7 +21,7 @@ public interface AccountORM extends ORM<Account>
 
     default Account map(ResultSet results) throws SQLException
     {
-        return new Account(results.getInt("id"), results.getInt("customer"), AccountType.valueOf(results.getString("type")), results.getDouble("balance"));
+        return new Account(results.getInt("id"), new Customer(results.getInt("customer"), null, null), AccountType.getInstance(results.getString("type")), results.getBigDecimal("balance"));
     }
 
     default String prepareInsert()
@@ -32,15 +33,14 @@ public interface AccountORM extends ORM<Account>
     {
         return " UPDATE " + table() + " SET customer = ?, type = ?, balance = ? WHERE id = ? ";
     }
-
-//    default String prepareDelete()
-//    {
-//        return " DELETE FROM " + table() + " WHERE id = ? ";
-//    }
-//
-//    default String prepareRead()
-//    {
-//        return " SELECT " + projection() + " FROM " + table() + "WHERE id = ? ";
-//    }
-
+    
+    default String prepareReadUser()
+    {
+        return prepareSimpleQuery("customer");
+    }
+    
+    default String prepareReadUnderwater()
+    {
+        return " SELECT " + projection() + " FROM " + table() + " WHERE balance < 0 ";
+    }
 }

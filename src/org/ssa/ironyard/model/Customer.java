@@ -1,27 +1,25 @@
 package org.ssa.ironyard.model;
 
-import org.ssa.ironyard.dao.DomainObject;
-
 public class Customer implements DomainObject
 {
-    private Integer id;
+    private final Integer id;
     private String firstName;
     private String lastName;
-    
+
     public Customer(Integer id, String firstName, String lastName)
     {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
     }
-    
+
     public Customer(String firstName, String lastName)
     {
         this.id = null;
         this.firstName = firstName;
         this.lastName = lastName;
     }
-    
+
     public Customer()
     {
         this.id = null;
@@ -32,11 +30,6 @@ public class Customer implements DomainObject
     public Integer getId()
     {
         return id;
-    }
-
-    public void setId(Integer id)
-    {
-        this.id = id;
     }
 
     public String getFirstName()
@@ -70,8 +63,7 @@ public class Customer implements DomainObject
         return result;
     }
 
-    @Override
-    public boolean equals(Object obj)
+    public boolean deeplyEquals(Object obj)
     {
         if (this == obj)
             return true;
@@ -102,6 +94,40 @@ public class Customer implements DomainObject
         else if (!lastName.equals(other.lastName))
             return false;
         return true;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Customer other = (Customer) obj;
+        if (id == null)
+        {
+            if (other.id != null)
+                return false;
+        }
+        else if (!id.equals(other.id))
+            return false;
+        return true;
+    }
+
+    @Override
+    protected Customer clone() throws CloneNotSupportedException
+    {
+        try
+        {
+            return (Customer) super.clone();
+        }
+        catch (CloneNotSupportedException ex)
+        {
+            return null;
+        }
+
     }
 
 }

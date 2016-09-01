@@ -7,6 +7,8 @@ import java.sql.Statement;
 
 import javax.sql.DataSource;
 
+import org.ssa.ironyard.model.DomainObject;
+
 public abstract class AbstractDAO<T extends DomainObject> 
 {
     final DataSource datasource;
@@ -61,7 +63,7 @@ public abstract class AbstractDAO<T extends DomainObject>
         }
         catch (Exception ex)
         {
-
+           
         }
         finally
         {
