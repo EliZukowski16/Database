@@ -23,10 +23,11 @@ public class Customer implements DomainObject
     public Customer()
     {
         this.id = null;
-        this.firstName = null;
-        this.lastName = null;
+        this.firstName = "";
+        this.lastName = "";
     }
 
+    @Override
     public Integer getId()
     {
         return id;
@@ -117,7 +118,7 @@ public class Customer implements DomainObject
     }
 
     @Override
-    protected Customer clone() throws CloneNotSupportedException
+    public Customer clone()
     {
         try
         {

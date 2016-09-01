@@ -13,6 +13,7 @@ public interface ORM<T extends DomainObject>
     T map(ResultSet results) throws SQLException;
     String prepareInsert();
     String prepareUpdate();
+    
     default String prepareReadAll()
     {
         return " SELECT " + projection() + " FROM " + table();

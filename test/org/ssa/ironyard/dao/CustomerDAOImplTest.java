@@ -1,6 +1,5 @@
 package org.ssa.ironyard.dao;
 
-import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -12,8 +11,9 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -25,17 +25,17 @@ import org.ssa.ironyard.model.Customer;
 
 import com.mysql.cj.jdbc.MysqlDataSource;
 
-public class CustomerDAOImplTest
+public class CustomerDAOImplTest extends AbstractDAOTest<Customer>
 {
-    static String URL = "jdbc:mysql://localhost/ssa_bank?user=root&password=root&";
-//                        "logger=org.ssa.ironyard.database.log.MySQLLog4jLogger&" +
-//                        "profileSQL=true&useServerPrpStmts=true";
+    static String URL = "jdbc:mysql://localhost/ssa_bank?user=root&password=root&" +
+    // "logger=org.ssa.ironyard.database.log.MySQLLog4jLogger&" +
+            "useServerPrpStmts=true";
     DataSource dataSource;
-    CustomerDAOImpl customerDAO;
+    AbstractDAO<Customer> customerDAO;
     Customer testCustomer;
     static List<Customer> rawTestCustomers;
     List<Customer> customersInDB;
-    
+
     @BeforeClass
     public static void setupBeforeClass() throws IOException
     {
@@ -45,7 +45,7 @@ public class CustomerDAOImplTest
         try
         {
             reader = Files.newBufferedReader(
-                    Paths.get("C:\\Users\\admin\\workspace\\DatabaseApp\\resources\\MOCK_DATA.csv"),
+                    Paths.get("C:\\Users\\admin\\workspace\\DatabaseApp\\resources\\MOCK_CUSTOMER_DATA.csv"),
                     Charset.defaultCharset());
 
             String line;
@@ -81,11 +81,11 @@ public class CustomerDAOImplTest
         testCustomer = new Customer("John", "Doe");
 
         ((CustomerDAOImpl) this.customerDAO).clear();
-        
+
         customersInDB = new ArrayList<>();
 
     }
-    
+
     @After
     public void teardown()
     {
@@ -96,14 +96,14 @@ public class CustomerDAOImplTest
     @Test
     public void insertCustomerIntoDB()
     {
-        for(Customer c : rawTestCustomers)
+        for (Customer c : rawTestCustomers)
         {
             Customer insertedCustomer = customerDAO.insert(c);
             assertNotEquals(c, insertedCustomer);
             assertTrue(insertedCustomer.getId() > 0);
             assertEquals(c.getFirstName(), insertedCustomer.getFirstName());
             assertEquals(c.getLastName(), insertedCustomer.getLastName());
-            
+
             customersInDB.add(insertedCustomer);
         }
         Customer testCustomerInDB = customerDAO.insert(testCustomer);
@@ -161,20 +161,80 @@ public class CustomerDAOImplTest
 
         assertEquals(testCustomerInDB, customerDAO.read(testCustomerInDB.getId()));
     }
-    
+
     @Test
     public void readAllCustomersFromDB()
     {
-        for(Customer c : rawTestCustomers)
+        for (Customer c : rawTestCustomers)
         {
             customerDAO.insert(c);
         }
-        
-        customersInDB = customerDAO.read();
-        
+
+        customersInDB = ((CustomerDAOImpl) customerDAO).read();
+
         assertEquals(1000, customersInDB.size());
+    }
+
+    @Test
+    public void readAllCustomersWithMatchingFirstNameFromDB()
+    {
+        Set<String> firstNames = new HashSet<>();
+
+        for (Customer c : rawTestCustomers)
+        {
+            customerDAO.insert(c);
+            firstNames.add(c.getFirstName());
+        }
+
+        for (String s : firstNames)
+        {
+            customersInDB = ((CustomerDAOImpl) customerDAO).readFirstName(s);
+
+            for (Customer c : customersInDB)
+            {
+                assertEquals(s, c.getFirstName());
+            }
+        }
+    }
+
+//    @Test
+    public void readAllCustomersWithMatchingLastNameFromDB()
+    {
+        Set<String> lastNames = new HashSet<>();
+
+        for (Customer c : rawTestCustomers)
+        {
+            customerDAO.insert(c);
+            lastNames.add(c.getLastName());
+        }
+
+        for (String s : lastNames)
+        {
+            customersInDB = ((CustomerDAOImpl) customerDAO).readLastName(s);
+
+            for (Customer c : customersInDB)
+            {
+                assertEquals(s, c.getLastName());
+            }
+        }
+    }
+
+    @Override
+    Customer newInstance()
+    {
+        return new Customer();
+    }
+
+    @Override
+    AbstractDAO<Customer> getDAO()
+    {
+        MysqlDataSource mysqlDdataSource = new MysqlDataSource();
+        mysqlDdataSource.setURL(URL);
         
+        this.dataSource = mysqlDdataSource;
+
+        this.customerDAO = new CustomerDAOImpl(dataSource, new CustomerORMImpl());
         
-        
+        return customerDAO;
     }
 }

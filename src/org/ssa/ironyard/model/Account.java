@@ -60,6 +60,7 @@ public class Account implements DomainObject
         this.balance = null;
     }
 
+    @Override
     public Integer getId()
     {
         return id;
