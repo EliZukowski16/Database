@@ -3,16 +3,18 @@ package org.ssa.ironyard.dao;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 import javax.sql.DataSource;
 
 import org.ssa.ironyard.model.DomainObject;
+import org.ssa.ironyard.orm.ORM;
 
-public abstract class AbstractDAO<T extends DomainObject> 
+public abstract class AbstractDAO<T extends DomainObject> implements DAO<T>
 {
-    final DataSource datasource;
-    final ORM<T> orm;
+    protected final DataSource datasource;
+    protected final ORM<T> orm;
 
     protected AbstractDAO(DataSource datasource, ORM<T> orm)
     {
@@ -21,22 +23,23 @@ public abstract class AbstractDAO<T extends DomainObject>
     }
 
     public abstract T insert(T domain);
+
     public boolean delete(int id)
     {
         Connection connection = null;
         PreparedStatement delete = null;
-        
+
         try
         {
             connection = this.datasource.getConnection();
             delete = connection.prepareStatement(this.orm.prepareDelete());
             delete.setInt(1, id);
-            if(delete.executeUpdate() > 0)
+            if (delete.executeUpdate() > 0)
                 return true;
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
-            
+
         }
         finally
         {
@@ -44,13 +47,15 @@ public abstract class AbstractDAO<T extends DomainObject>
         }
         return false;
     }
+
     public abstract T update(T domain);
+
     public T read(int id)
     {
         Connection connection = null;
         PreparedStatement read = null;
         ResultSet query = null;
-        
+
         try
         {
             connection = this.datasource.getConnection();
@@ -63,7 +68,7 @@ public abstract class AbstractDAO<T extends DomainObject>
         }
         catch (Exception ex)
         {
-           
+
         }
         finally
         {
@@ -71,32 +76,25 @@ public abstract class AbstractDAO<T extends DomainObject>
         }
         return null;
     }
-    static protected void cleanup(ResultSet results, Statement statement, Connection connection)
+
+    public void clear()
     {
+        Statement deleteAllData = null;
+        Connection connection = null;
         try
         {
-            if(results != null)
-                results.close();
-            cleanup(statement, connection);
+            connection = datasource.getConnection();
+            deleteAllData = connection.createStatement();
+            deleteAllData.execute("DELETE FROM " + this.orm.table());
         }
-        catch(Exception ex)
+        catch (SQLException e)
         {
-            
+            e.printStackTrace();
+        }
+        finally
+        {
+            cleanup(deleteAllData, connection);
         }
     }
-    
-    static protected void cleanup(Statement statement, Connection connection)
-    {
-        try
-        {
-            if(statement != null)
-                statement.close();
-            if(connection != null)
-                connection.close();
-        }
-        catch(Exception ex)
-        {
-            
-        }
-    }
+
 }

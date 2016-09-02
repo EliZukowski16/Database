@@ -1,4 +1,4 @@
-package org.ssa.ironyard.dao;
+package org.ssa.ironyard.customer.dao;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,19 +10,25 @@ import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.ssa.ironyard.model.Account;
-import org.ssa.ironyard.model.Customer;
+import org.ssa.ironyard.customer.model.Customer;
+import org.ssa.ironyard.customer.orm.CustomerORM;
+import org.ssa.ironyard.customer.orm.CustomerORMImpl;
+import org.ssa.ironyard.dao.AbstractDAO;
+import org.ssa.ironyard.orm.ORM;
 
-public class CustomerDAOImpl extends AbstractDAO<Customer>
+public abstract class AbstractCustomerDAO extends AbstractDAO<Customer> implements CustomerDAO
 {
-    protected CustomerDAOImpl(DataSource datasource, ORM<Customer> orm)
+
+    protected AbstractCustomerDAO(DataSource datasource, ORM<Customer> orm)
     {
         super(datasource, orm);
     }
-
-    // static final Logger LOGGER = LogManager.getLogger(CustomerDAOImpl.class);
-
-    @Override
+    
+    protected AbstractCustomerDAO(DataSource datasource)
+    {
+        this(datasource, new CustomerORMImpl());
+    }
+    
     public Customer insert(Customer customer)
     {
         Connection connection = null;
@@ -40,7 +46,7 @@ public class CustomerDAOImpl extends AbstractDAO<Customer>
             if (results.next())
             {
                 Customer returnCustomer = new Customer(results.getInt(1), customer.getFirstName(),
-                        customer.getLastName());
+                        customer.getLastName(), true);
 
                 return returnCustomer;
             }
@@ -54,8 +60,7 @@ public class CustomerDAOImpl extends AbstractDAO<Customer>
         }
         return null;
     }
-
-    @Override
+    
     public Customer update(Customer customer)
     {
         Connection connection = null;
@@ -70,7 +75,9 @@ public class CustomerDAOImpl extends AbstractDAO<Customer>
             update.setInt(3, customer.getId());
             if (update.executeUpdate() > 0)
             {
-                return customer;
+                Customer customerCopy = customer.clone();
+                customerCopy.setLoaded(true);
+                return customerCopy;
             }
         }
         catch (Exception ex)
@@ -84,6 +91,7 @@ public class CustomerDAOImpl extends AbstractDAO<Customer>
         return null;
     }
 
+    
     public List<Customer> read()
     {
         List<Customer> customers = new ArrayList<>();
@@ -112,7 +120,7 @@ public class CustomerDAOImpl extends AbstractDAO<Customer>
         }
         return customers;
     }
-
+    
     public List<Customer> readFirstName(String firstName)
     {
         return performSimpleStringQuery("first", firstName);
@@ -175,4 +183,5 @@ public class CustomerDAOImpl extends AbstractDAO<Customer>
         }
 
     }
+
 }

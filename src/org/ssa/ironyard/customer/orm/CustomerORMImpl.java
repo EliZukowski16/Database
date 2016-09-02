@@ -1,4 +1,4 @@
-package org.ssa.ironyard.dao;
+package org.ssa.ironyard.customer.orm;
 
 public class CustomerORMImpl implements CustomerORM
 {

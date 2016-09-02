@@ -4,17 +4,15 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import javax.sql.DataSource;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.ssa.ironyard.model.DomainObject;
 
 public abstract class AbstractDAOTest<T extends DomainObject>
 {
-    abstract AbstractDAO<T> getDAO();
+    protected abstract AbstractDAO<T> getDAO();
     
-    abstract T newInstance();
+    protected abstract T newInstance();
     
     AbstractDAO<T> dao;
 
@@ -35,6 +33,8 @@ public abstract class AbstractDAOTest<T extends DomainObject>
         T tFromDB = dao.read(tInDB.getId());
         
         assertEquals(tInDB, tFromDB);
+        
+        assertTrue(tInDB.deeplyEquals(tFromDB));
         
         T tCloned = (T) tFromDB.clone();
         

@@ -1,4 +1,4 @@
-package org.ssa.ironyard.dao;
+package org.ssa.ironyard.customer.dao;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -21,7 +21,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.ssa.ironyard.model.Customer;
+import org.ssa.ironyard.customer.model.Customer;
+import org.ssa.ironyard.dao.AbstractDAO;
+import org.ssa.ironyard.dao.AbstractDAOTest;
 
 import com.mysql.cj.jdbc.MysqlDataSource;
 
@@ -76,7 +78,7 @@ public class CustomerDAOImplTest extends AbstractDAOTest<Customer>
 
         this.dataSource = mysqlDdataSource;
 
-        this.customerDAO = new CustomerDAOImpl(dataSource, new CustomerORMImpl());
+        this.customerDAO = new CustomerDAOImpl(dataSource);
 
         testCustomer = new Customer("John", "Doe");
 
@@ -93,7 +95,7 @@ public class CustomerDAOImplTest extends AbstractDAOTest<Customer>
         ((CustomerDAOImpl) this.customerDAO).clear();
     }
 
-    @Test
+//    @Test
     public void insertCustomerIntoDB()
     {
         for (Customer c : rawTestCustomers)
@@ -162,7 +164,7 @@ public class CustomerDAOImplTest extends AbstractDAOTest<Customer>
         assertEquals(testCustomerInDB, customerDAO.read(testCustomerInDB.getId()));
     }
 
-    @Test
+//    @Test
     public void readAllCustomersFromDB()
     {
         for (Customer c : rawTestCustomers)
@@ -170,12 +172,12 @@ public class CustomerDAOImplTest extends AbstractDAOTest<Customer>
             customerDAO.insert(c);
         }
 
-        customersInDB = ((CustomerDAOImpl) customerDAO).read();
+        customersInDB = ((CustomerDAO) customerDAO).read();
 
         assertEquals(1000, customersInDB.size());
     }
 
-    @Test
+//    @Test
     public void readAllCustomersWithMatchingFirstNameFromDB()
     {
         Set<String> firstNames = new HashSet<>();
@@ -188,7 +190,7 @@ public class CustomerDAOImplTest extends AbstractDAOTest<Customer>
 
         for (String s : firstNames)
         {
-            customersInDB = ((CustomerDAOImpl) customerDAO).readFirstName(s);
+            customersInDB = ((CustomerDAO) customerDAO).readFirstName(s);
 
             for (Customer c : customersInDB)
             {
@@ -210,7 +212,7 @@ public class CustomerDAOImplTest extends AbstractDAOTest<Customer>
 
         for (String s : lastNames)
         {
-            customersInDB = ((CustomerDAOImpl) customerDAO).readLastName(s);
+            customersInDB = ((CustomerDAO) customerDAO).readLastName(s);
 
             for (Customer c : customersInDB)
             {
@@ -220,20 +222,21 @@ public class CustomerDAOImplTest extends AbstractDAOTest<Customer>
     }
 
     @Override
-    Customer newInstance()
+   
+    protected Customer newInstance()
     {
         return new Customer();
     }
 
     @Override
-    AbstractDAO<Customer> getDAO()
+    protected AbstractDAO<Customer> getDAO()
     {
         MysqlDataSource mysqlDdataSource = new MysqlDataSource();
         mysqlDdataSource.setURL(URL);
         
         this.dataSource = mysqlDdataSource;
 
-        this.customerDAO = new CustomerDAOImpl(dataSource, new CustomerORMImpl());
+        this.customerDAO = new CustomerDAOImpl(dataSource);
         
         return customerDAO;
     }

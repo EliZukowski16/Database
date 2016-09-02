@@ -1,10 +1,13 @@
-package org.ssa.ironyard.model;
+package org.ssa.ironyard.account.model;
 
 import java.math.BigDecimal;
 
-public class Account implements DomainObject
+import org.ssa.ironyard.customer.model.Customer;
+import org.ssa.ironyard.model.AbstractDomainObject;
+import org.ssa.ironyard.model.DomainObject;
+
+public class Account extends AbstractDomainObject implements DomainObject
 {
-    private final Integer id;
     private AccountType type;
     private BigDecimal balance;
     private Customer customer;
@@ -27,61 +30,53 @@ public class Account implements DomainObject
 
         public static AccountType getInstance(String accountType)
         {
-            for(AccountType t: values())
+            for (AccountType t : values())
             {
-                if(t.accountType.equals(accountType))
+                if (t.accountType.equals(accountType))
                     return t;
             }
             return null;
         }
     }
-
-    public Account(Customer customer, AccountType type, BigDecimal balance)
+    
+    public Account(Integer id, Customer customer, AccountType type, BigDecimal balance, boolean loaded)
     {
-        this.id = null;
+        super(id, loaded);
         this.customer = customer;
         this.type = type;
         this.balance = balance;
     }
-
+    
     public Account(Integer id, Customer customer, AccountType type, BigDecimal balance)
     {
-        this.id = id;
-        this.customer = customer;
-        this.type = type;
-        this.balance = balance;
+        this(id, customer, type, balance, false);
+    }
+
+    public Account(Customer customer, AccountType type, BigDecimal balance)
+    {
+        this(null, customer, type, balance);
     }
 
     public Account()
     {
-        this.id = null;
-        this.customer = new Customer();
-        this.type = null;
-        this.balance = null;
-    }
-
-    @Override
-    public Integer getId()
-    {
-        return id;
+        this(new Customer(), null, null);
     }
 
     public Customer getCustomer()
     {
         return customer;
     }
-    
+
     private void setCustomer(Customer customer)
     {
         this.customer = customer;
-        
     }
 
     public AccountType getType()
     {
         return type;
     }
-    
+
     public void setType(AccountType type)
     {
         this.type = type;
@@ -91,7 +86,7 @@ public class Account implements DomainObject
     {
         return balance;
     }
-    
+
     public void setBalance(BigDecimal balance)
     {
         this.balance = balance;
@@ -106,6 +101,7 @@ public class Account implements DomainObject
         result = prime * result + ((customer == null) ? 0 : customer.hashCode());
         result = prime * result + ((id == null) ? 0 : id.hashCode());
         result = prime * result + ((type == null) ? 0 : type.hashCode());
+        result = prime * result + ((loaded == null) ? 0 : loaded.hashCode());
         return result;
     }
 
@@ -128,8 +124,9 @@ public class Account implements DomainObject
             return false;
         return true;
     }
-    
-    public boolean deeplyEquals(Object obj)
+
+    @Override
+    public boolean deeplyEquals(DomainObject obj)
     {
         if (this == obj)
             return true;
@@ -159,7 +156,19 @@ public class Account implements DomainObject
         }
         else if (!id.equals(other.id))
             return false;
-        if (type != other.type)
+        if (type == null)
+        {
+            if (other.type != null)
+                return false;
+        }
+        else if (!type.equals(other.type))
+            return false;
+        if (loaded == null)
+        {
+            if (other.loaded != null)
+                return false;
+        }
+        else if (!loaded.equals(other.loaded))
             return false;
         return true;
     }
@@ -167,20 +176,19 @@ public class Account implements DomainObject
     @Override
     public Account clone()
     {
+        Account copy;
         try
         {
-            Account copy = (Account) super.clone();
+            copy = (Account) super.clone();
             copy.setCustomer(this.customer.clone());
             return copy;
         }
-        catch(CloneNotSupportedException ex)
+        catch (CloneNotSupportedException e)
         {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
             return null;
         }
     }
 
-
-
-    
-    
 }

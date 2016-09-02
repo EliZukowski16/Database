@@ -1,11 +1,12 @@
-package org.ssa.ironyard.dao;
+package org.ssa.ironyard.account.orm;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.ssa.ironyard.model.Account;
-import org.ssa.ironyard.model.Account.AccountType;
-import org.ssa.ironyard.model.Customer;
+import org.ssa.ironyard.account.model.Account;
+import org.ssa.ironyard.account.model.Account.AccountType;
+import org.ssa.ironyard.customer.model.Customer;
+import org.ssa.ironyard.orm.ORM;
 
 public interface AccountORM extends ORM<Account>
 {   
@@ -21,7 +22,7 @@ public interface AccountORM extends ORM<Account>
 
     default Account map(ResultSet results) throws SQLException
     {
-        return new Account(results.getInt("id"), new Customer(results.getInt("customer"), null, null), AccountType.getInstance(results.getString("type")), results.getBigDecimal("balance"));
+        return new Account(results.getInt("id"), new Customer(results.getInt("customer"), null, null), AccountType.getInstance(results.getString("type")), results.getBigDecimal("balance"), true);
     }
 
     default String prepareInsert()

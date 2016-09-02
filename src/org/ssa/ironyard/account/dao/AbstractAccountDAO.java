@@ -1,25 +1,32 @@
-package org.ssa.ironyard.dao;
+package org.ssa.ironyard.account.dao;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.sql.DataSource;
 
-import org.ssa.ironyard.model.Account;
+import org.ssa.ironyard.account.model.Account;
+import org.ssa.ironyard.account.orm.AccountORM;
+import org.ssa.ironyard.account.orm.AccountORMImpl;
+import org.ssa.ironyard.dao.AbstractDAO;
+import org.ssa.ironyard.orm.ORM;
 
-public class AccountDAOImpl extends AbstractDAO<Account>
+public abstract class AbstractAccountDAO extends AbstractDAO<Account>
 {
-    protected AccountDAOImpl(DataSource datasource, ORM<Account> orm)
+
+    protected AbstractAccountDAO(DataSource datasource, ORM<Account> orm)
     {
         super(datasource, orm);
     }
-
-    // static final Logger LOGGER = LogManager.getLogger(AccountDAOImpl.class);
+    
+    protected AbstractAccountDAO(DataSource datasource)
+    {
+        this(datasource, new AccountORMImpl());
+    }
 
     @Override
     public Account insert(Account account)
@@ -40,7 +47,7 @@ public class AccountDAOImpl extends AbstractDAO<Account>
             if (results.next())
             {
                 Account returnAccount = new Account(results.getInt(1), account.getCustomer(), account.getType(),
-                        account.getBalance());
+                        account.getBalance(), true);
 
                 return returnAccount;
             }
@@ -71,7 +78,9 @@ public class AccountDAOImpl extends AbstractDAO<Account>
             update.setInt(4, account.getId());
             if (update.executeUpdate() > 0)
             {
-                return account;
+                Account accountCopy = account.clone();
+                accountCopy.setLoaded(true);
+                return accountCopy;
             }
         }
         catch (Exception ex)
@@ -144,24 +153,4 @@ public class AccountDAOImpl extends AbstractDAO<Account>
         return underwaterAccounts;
     }
 
-    public void clear()
-    {
-        Statement deleteAllData = null;
-        Connection connection = null;
-        try
-        {
-            connection = datasource.getConnection();
-            deleteAllData = connection.createStatement();
-            deleteAllData.execute("DELETE FROM accounts");
-        }
-        catch (SQLException e)
-        {
-            e.printStackTrace();
-        }
-        finally
-        {
-            cleanup(deleteAllData, connection);
-        }
-
-    }
 }

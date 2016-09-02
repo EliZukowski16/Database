@@ -1,9 +1,10 @@
-package org.ssa.ironyard.dao;
+package org.ssa.ironyard.customer.orm;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.ssa.ironyard.model.Customer;
+import org.ssa.ironyard.customer.model.Customer;
+import org.ssa.ironyard.orm.ORM;
 
 public interface CustomerORM extends ORM<Customer>
 {
@@ -19,7 +20,7 @@ public interface CustomerORM extends ORM<Customer>
 
     default Customer map(ResultSet results) throws SQLException
     {
-        return new Customer(results.getInt("id"), results.getString("first"), results.getString("last"));
+        return new Customer(results.getInt("id"), results.getString("first"), results.getString("last"), true);
     }
 
     default String prepareInsert()

@@ -1,37 +1,35 @@
-package org.ssa.ironyard.model;
+package org.ssa.ironyard.customer.model;
 
-public class Customer implements DomainObject
+import org.ssa.ironyard.model.AbstractDomainObject;
+import org.ssa.ironyard.model.DomainObject;
+
+public class Customer extends AbstractDomainObject implements DomainObject
 {
-    private final Integer id;
     private String firstName;
     private String lastName;
 
-    public Customer(Integer id, String firstName, String lastName)
+    public Customer(Integer id, String firstName, String lastName, boolean loaded)
     {
-        this.id = id;
+        super(id, loaded);
         this.firstName = firstName;
         this.lastName = lastName;
+    }
+    
+    public Customer(Integer id, String firstName, String lastName)
+    {
+        this(id, firstName, lastName, false);
     }
 
     public Customer(String firstName, String lastName)
     {
-        this.id = null;
-        this.firstName = firstName;
-        this.lastName = lastName;
+        this(null, firstName, lastName);
     }
 
     public Customer()
     {
-        this.id = null;
-        this.firstName = "";
-        this.lastName = "";
+        this("", "");
     }
 
-    @Override
-    public Integer getId()
-    {
-        return id;
-    }
 
     public String getFirstName()
     {
@@ -61,10 +59,12 @@ public class Customer implements DomainObject
         result = prime * result + ((firstName == null) ? 0 : firstName.hashCode());
         result = prime * result + ((id == null) ? 0 : id.hashCode());
         result = prime * result + ((lastName == null) ? 0 : lastName.hashCode());
+        result = prime * result + ((loaded == null) ? 0 : loaded.hashCode());
         return result;
     }
 
-    public boolean deeplyEquals(Object obj)
+    @Override
+    public boolean deeplyEquals(DomainObject obj)
     {
         if (this == obj)
             return true;
@@ -93,6 +93,13 @@ public class Customer implements DomainObject
                 return false;
         }
         else if (!lastName.equals(other.lastName))
+            return false;
+        if (loaded == null)
+        {
+            if (other.loaded != null)
+                return false;
+        }
+        else if (!loaded.equals(other.loaded))
             return false;
         return true;
     }
@@ -124,11 +131,11 @@ public class Customer implements DomainObject
         {
             return (Customer) super.clone();
         }
-        catch (CloneNotSupportedException ex)
+        catch (CloneNotSupportedException e)
         {
+            e.printStackTrace();
             return null;
         }
-
     }
 
 }

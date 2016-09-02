@@ -1,4 +1,4 @@
-package org.ssa.ironyard.dao;
+package org.ssa.ironyard.account.dao;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -20,9 +20,13 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.ssa.ironyard.model.Account;
-import org.ssa.ironyard.model.Account.AccountType;
-import org.ssa.ironyard.model.Customer;
+import org.junit.Test;
+import org.ssa.ironyard.account.model.Account;
+import org.ssa.ironyard.account.model.Account.AccountType;
+import org.ssa.ironyard.customer.dao.CustomerDAOImpl;
+import org.ssa.ironyard.customer.model.Customer;
+import org.ssa.ironyard.dao.AbstractDAO;
+import org.ssa.ironyard.dao.AbstractDAOTest;
 
 import com.mysql.cj.jdbc.MysqlDataSource;
 
@@ -47,8 +51,11 @@ public class AccountDAOImplTest extends AbstractDAOTest<Account>
         mysqlDdataSource.setURL(URL);
 
         DataSource dataSource = mysqlDdataSource;
-        customerDAO = new CustomerDAOImpl(dataSource, new CustomerORMImpl());
-        accountDAO = new AccountDAOImpl(dataSource, new AccountORMImpl());
+        customerDAO = new CustomerDAOImpl(dataSource);
+        accountDAO = new AccountDAOImpl(dataSource);
+
+        customerDAO.clear();
+        accountDAO.clear();
 
         BufferedReader customerReader = null;
         BufferedReader accountReader = null;
@@ -99,7 +106,7 @@ public class AccountDAOImplTest extends AbstractDAOTest<Account>
     {
         testCustomer = new Customer("John", "Doe");
 
-        ((AccountDAOImpl) accountDAO).clear();
+        accountDAO.clear();
 
         accountsInDB = new ArrayList<>();
     }
@@ -108,16 +115,16 @@ public class AccountDAOImplTest extends AbstractDAOTest<Account>
     public void teardown()
     {
         accountsInDB.clear();
-        ((AccountDAOImpl) accountDAO).clear();
+        accountDAO.clear();
     }
 
     @AfterClass
     public static void teardownAfterClass()
     {
-        ((CustomerDAOImpl) customerDAO).clear();
+        customerDAO.clear();
     }
 
-    // @Test
+    @Test
     public void insertAccountIntoDB()
     {
         Customer testCustomerInDB = customerDAO.insert(testCustomer);
@@ -135,7 +142,7 @@ public class AccountDAOImplTest extends AbstractDAOTest<Account>
         customerDAO.delete(testCustomerInDB.getId());
     }
 
-    // @Test
+    @Test
     public void updateAccountInDB()
     {
         Customer testCustomerInDB = customerDAO.insert(testCustomer);
@@ -163,7 +170,7 @@ public class AccountDAOImplTest extends AbstractDAOTest<Account>
         customerDAO.delete(testCustomerInDB.getId());
     }
 
-    // @Test
+    @Test
     public void deleteAccountFromDB()
     {
         Customer testCustomerInDB = customerDAO.insert(testCustomer);
@@ -182,7 +189,7 @@ public class AccountDAOImplTest extends AbstractDAOTest<Account>
         customerDAO.delete(testCustomerInDB.getId());
     }
 
-    // @Test
+    @Test
     public void readSingleAccountFromDB()
     {
         Customer testCustomerInDB = customerDAO.insert(testCustomer);
@@ -198,7 +205,7 @@ public class AccountDAOImplTest extends AbstractDAOTest<Account>
         customerDAO.delete(testCustomerInDB.getId());
     }
 
-    // @Test
+    @Test
     public void readAllAccountsFromOneCustomerInDB()
     {
         Customer testCustomerInDB = customerDAO.insert(testCustomer);
@@ -210,7 +217,7 @@ public class AccountDAOImplTest extends AbstractDAOTest<Account>
 
         List<Account> userAccounts = new ArrayList<>();
 
-        userAccounts = ((AccountDAOImpl) accountDAO).readUser(testCustomerInDB.getId());
+        userAccounts = ((AccountDAO) accountDAO).readUser(testCustomerInDB.getId());
 
         assertEquals(2, userAccounts.size());
 
@@ -222,7 +229,7 @@ public class AccountDAOImplTest extends AbstractDAOTest<Account>
         customerDAO.delete(testCustomerInDB.getId());
     }
 
-    // @Test
+    @Test
     public void readUnderwaterAccountsFromDB()
     {
         Customer testCustomerInDB = customerDAO.insert(testCustomer);
@@ -240,7 +247,7 @@ public class AccountDAOImplTest extends AbstractDAOTest<Account>
 
         List<Account> userAccounts = new ArrayList<>();
 
-        userAccounts = ((AccountDAOImpl) accountDAO).readUnderwater();
+        userAccounts = ((AccountDAO) accountDAO).readUnderwater();
 
         assertEquals(2, userAccounts.size());
 
@@ -253,7 +260,7 @@ public class AccountDAOImplTest extends AbstractDAOTest<Account>
         customerDAO.delete(testCustomerInDB.getId());
     }
 
-    // @Test
+    @Test
     public void multipleAccountsAttachedToMultipleCustomers()
     {
         for (Account a : rawTestAccounts)
@@ -264,7 +271,7 @@ public class AccountDAOImplTest extends AbstractDAOTest<Account>
 
         for (Customer c : customersInDB)
         {
-            List<Account> customerAccounts = ((AccountDAOImpl) accountDAO).readUser(c.getId());
+            List<Account> customerAccounts = ((AccountDAO) accountDAO).readUser(c.getId());
 
             for (Account a : customerAccounts)
             {
@@ -272,7 +279,7 @@ public class AccountDAOImplTest extends AbstractDAOTest<Account>
             }
         }
 
-        List<Account> underwaterAccounts = ((AccountDAOImpl) accountDAO).readUnderwater();
+        List<Account> underwaterAccounts = ((AccountDAO) accountDAO).readUnderwater();
 
         for (Account a : underwaterAccounts)
         {
@@ -282,21 +289,30 @@ public class AccountDAOImplTest extends AbstractDAOTest<Account>
     }
 
     @Override
-    Account newInstance()
-    {
-        return new Account();
-    }
-
-    @Override
-    AbstractDAO<Account> getDAO()
+    protected Account newInstance()
     {
         MysqlDataSource mysqlDdataSource = new MysqlDataSource();
         mysqlDdataSource.setURL(URL);
-        
+
         this.dataSource = mysqlDdataSource;
 
-        accountDAO = new AccountDAOImpl(dataSource, new AccountORMImpl());
-        
+        customerDAO = new CustomerDAOImpl(dataSource);
+
+        Customer customerInDB = customerDAO.insert(new Customer("John", "Doe"));
+
+        return new Account(customerInDB, AccountType.CHECKING, BigDecimal.valueOf(1000.0));
+    }
+
+    @Override
+    protected AbstractDAO<Account> getDAO()
+    {
+        MysqlDataSource mysqlDdataSource = new MysqlDataSource();
+        mysqlDdataSource.setURL(URL);
+
+        this.dataSource = mysqlDdataSource;
+
+        accountDAO = new AccountDAOImpl(dataSource);
+
         return accountDAO;
     }
 }
