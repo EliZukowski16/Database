@@ -42,6 +42,6 @@ public interface AccountORM extends ORM<Account>
     
     default String prepareReadUnderwater()
     {
-        return " SELECT " + projection() + " FROM " + table() + " WHERE balance < 0 ";
+        return " SELECT " + projection() + " FROM " + table() + " WHERE balance < ? ";
     }
 }

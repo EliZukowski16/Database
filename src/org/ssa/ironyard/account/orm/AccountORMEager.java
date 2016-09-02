@@ -33,6 +33,18 @@ public class AccountORMEager implements AccountORM
         
     }
     
+    @Override
+    public String prepareReadUser()
+    {
+        return " SELECT " + projection() + " FROM " + join() + " ON " + relationship() + " WHERE accounts.customer = ? ";
+    }
+    
+    @Override
+    public String prepareReadUnderwater()
+    {
+        return " SELECT " + projection() + " FROM " + join() + " ON " + relationship() + " WHERE accounts.balance < ? ";
+    }
+    
     private String join()
     {
         return " accounts JOIN customers ";

@@ -16,8 +16,6 @@ import org.ssa.ironyard.customer.model.Customer;
 
 public class AccountDAOEager extends AbstractAccountDAO implements AccountDAO
 {
-    private Customer customer;
-
     protected AccountDAOEager(DataSource datasource)
     {
         super(datasource, new AccountORMEager());
@@ -37,8 +35,11 @@ public class AccountDAOEager extends AbstractAccountDAO implements AccountDAO
             read.setInt(1, id);
             query = read.executeQuery();
             if (query.next())
-                this.customer = ((AccountORMEager) this.orm).mapCustomer(query);
-                return ((AccountORMEager) this.orm).mapAccount(query);
+            {
+                Account account = ((AccountORMEager) this.orm).mapAccount(query);
+                account.setCustomer(((AccountORMEager) this.orm).mapCustomer(query));
+                return account;
+            }
 
         }
         catch (Exception ex)
@@ -70,8 +71,9 @@ public class AccountDAOEager extends AbstractAccountDAO implements AccountDAO
             results = readUser.executeQuery();
             while (results.next())
             {
-                customer = ((AccountORMEager) this.orm).mapCustomer(results);
-                userAccounts.add(((AccountORMEager) this.orm).mapAccount(results));
+                Account account = ((AccountORMEager) this.orm).mapAccount(results);
+                account.setCustomer(((AccountORMEager) this.orm).mapCustomer(results));
+                userAccounts.add(account);
             }
         }
         catch (Exception ex)
@@ -98,11 +100,13 @@ public class AccountDAOEager extends AbstractAccountDAO implements AccountDAO
             connection = datasource.getConnection();
             readUnderwaterAccounts = connection.prepareStatement(((AccountORMEager)this.orm).prepareReadUnderwater(),
                     Statement.RETURN_GENERATED_KEYS);
+            readUnderwaterAccounts.setInt(1, 0);
             results = readUnderwaterAccounts.executeQuery();
             while (results.next())
             {
-                customer = ((AccountORMEager) this.orm).mapCustomer(results);
-                underwaterAccounts.add(((AccountORMEager) this.orm).mapAccount(results));
+                Account account = ((AccountORMEager) this.orm).mapAccount(results);
+                account.setCustomer(((AccountORMEager) this.orm).mapCustomer(results));
+                underwaterAccounts.add(account);
             }
         }
         catch (Exception ex)
@@ -114,10 +118,4 @@ public class AccountDAOEager extends AbstractAccountDAO implements AccountDAO
         }
         return underwaterAccounts;
     }
-
-    public Customer getCustomer()
-    {
-        return this.customer;
-    }
-
 }

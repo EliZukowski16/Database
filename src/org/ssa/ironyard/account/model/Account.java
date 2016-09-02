@@ -67,7 +67,7 @@ public class Account extends AbstractDomainObject implements DomainObject
         return customer;
     }
 
-    private void setCustomer(Customer customer)
+    public void setCustomer(Customer customer)
     {
         this.customer = customer;
     }

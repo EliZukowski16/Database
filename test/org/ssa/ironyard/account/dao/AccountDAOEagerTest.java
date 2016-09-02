@@ -133,11 +133,57 @@ public class AccountDAOEagerTest
         assertEquals(testAccountInDB, testAccountFromDB);
         assertTrue(testAccountInDB.deeplyEquals(testAccountFromDB));
         
-        Customer eagerlyLoadedCustomer = ((AccountDAOEager) accountDAO).getCustomer();
+        Customer eagerlyLoadedCustomer = testAccountFromDB.getCustomer();
         
         assertEquals(customerDAO.read(eagerlyLoadedCustomer.getId()), eagerlyLoadedCustomer);
         assertTrue(customerDAO.read(eagerlyLoadedCustomer.getId()).deeplyEquals(eagerlyLoadedCustomer));
         assertTrue(eagerlyLoadedCustomer.isLoaded());
+        assertNotNull(eagerlyLoadedCustomer.getFirstName());
+        assertNotNull(eagerlyLoadedCustomer.getLastName());
+    }
+    
+    @Test
+    public void accountEagerlyLoadsCustomerAfterReadingAllUsersAccounts()
+    {
+        randomlyLinkCustomersAndAccounts();
+        
+        for (Customer c : customersInDB)
+        {
+            List<Account> customerAccounts =  ((AccountDAOEager) accountDAO).readUser(c.getId());
+
+            for (Account a : customerAccounts)
+            {
+                assertEquals(c, a.getCustomer());
+                assertNotNull(a.getCustomer().getFirstName());
+                assertNotNull(a.getCustomer().getLastName());
+                assertTrue(a.getCustomer().isLoaded());
+            }
+        }
+    }
+    
+    @Test
+    public void accountEagerlyLoadsCustomersFromUnderwaterRead()
+    {
+        randomlyLinkCustomersAndAccounts();
+        
+        List<Account> underwaterAccounts = ((AccountDAOEager) accountDAO).readUnderwater();
+
+        for (Account a : underwaterAccounts)
+        {
+            assertEquals(-1, a.getBalance().compareTo(BigDecimal.ZERO));
+            assertNotNull(a.getCustomer().getFirstName());
+            assertNotNull(a.getCustomer().getLastName());
+            assertTrue(a.getCustomer().isLoaded());
+        }
+    }
+    
+    private void randomlyLinkCustomersAndAccounts()
+    {
+        for (Account a : rawTestAccounts)
+        {
+            Integer randCustomer = (int) (Math.random() * customersInDB.size());
+            accountDAO.insert(new Account(customersInDB.get(randCustomer), a.getType(), a.getBalance()));
+        }
     }
 
 }

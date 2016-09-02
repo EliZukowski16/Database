@@ -263,12 +263,8 @@ public class AccountDAOImplTest extends AbstractDAOTest<Account>
     @Test
     public void multipleAccountsAttachedToMultipleCustomers()
     {
-        for (Account a : rawTestAccounts)
-        {
-            Integer randCustomer = (int) (Math.random() * customersInDB.size());
-            accountDAO.insert(new Account(customersInDB.get(randCustomer), a.getType(), a.getBalance()));
-        }
-
+        randomlyLinkCustomersAndAccounts();
+        
         for (Customer c : customersInDB)
         {
             List<Account> customerAccounts = ((AccountDAO) accountDAO).readUser(c.getId());
@@ -286,6 +282,15 @@ public class AccountDAOImplTest extends AbstractDAOTest<Account>
             assertEquals(-1, a.getBalance().compareTo(BigDecimal.ZERO));
         }
 
+    }
+    
+    private void randomlyLinkCustomersAndAccounts()
+    {
+        for (Account a : rawTestAccounts)
+        {
+            Integer randCustomer = (int) (Math.random() * customersInDB.size());
+            accountDAO.insert(new Account(customersInDB.get(randCustomer), a.getType(), a.getBalance()));
+        }
     }
 
     @Override

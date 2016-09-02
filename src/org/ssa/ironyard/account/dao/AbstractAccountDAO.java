@@ -137,6 +137,7 @@ public abstract class AbstractAccountDAO extends AbstractDAO<Account>
             connection = datasource.getConnection();
             readUnderwaterAccounts = connection.prepareStatement(((AccountORM) orm).prepareReadUnderwater(),
                     Statement.RETURN_GENERATED_KEYS);
+            readUnderwaterAccounts.setInt(1, 0);
             results = readUnderwaterAccounts.executeQuery();
             while (results.next())
             {
