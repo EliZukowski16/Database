@@ -23,10 +23,11 @@ import org.ssa.ironyard.account.model.Account.AccountType;
 import org.ssa.ironyard.customer.dao.CustomerDAOImpl;
 import org.ssa.ironyard.customer.model.Customer;
 import org.ssa.ironyard.dao.AbstractDAO;
+import org.ssa.ironyard.dao.AbstractDAOTest;
 
 import com.mysql.cj.jdbc.MysqlDataSource;
 
-public class AccountDAOEagerTest
+public class AccountDAOEagerTest extends AbstractDAOTest<Account>
 {
     static String URL = "jdbc:mysql://localhost/ssa_bank?user=root&password=root&" +
     // "logger=org.ssa.ironyard.database.log.MySQLLog4jLogger&" +
@@ -184,6 +185,34 @@ public class AccountDAOEagerTest
             Integer randCustomer = (int) (Math.random() * customersInDB.size());
             accountDAO.insert(new Account(customersInDB.get(randCustomer), a.getType(), a.getBalance()));
         }
+    }
+    
+    @Override
+    protected Account newInstance()
+    {
+        MysqlDataSource mysqlDdataSource = new MysqlDataSource();
+        mysqlDdataSource.setURL(URL);
+
+        this.dataSource = mysqlDdataSource;
+
+        customerDAO = new CustomerDAOImpl(dataSource);
+
+        Customer customerInDB = customerDAO.insert(new Customer("John", "Doe"));
+
+        return new Account(customerInDB, AccountType.CHECKING, BigDecimal.valueOf(1000.0));
+    }
+
+    @Override
+    protected AbstractDAO<Account> getDAO()
+    {
+        MysqlDataSource mysqlDdataSource = new MysqlDataSource();
+        mysqlDdataSource.setURL(URL);
+
+        this.dataSource = mysqlDdataSource;
+
+        accountDAO = new AccountDAOEager(dataSource);
+
+        return accountDAO;
     }
 
 }
