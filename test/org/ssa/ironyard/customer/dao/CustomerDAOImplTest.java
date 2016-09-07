@@ -105,15 +105,10 @@ public class CustomerDAOImplTest extends AbstractDAOTest<Customer>
             assertTrue(insertedCustomer.getId() > 0);
             assertEquals(c.getFirstName(), insertedCustomer.getFirstName());
             assertEquals(c.getLastName(), insertedCustomer.getLastName());
-
+            assertTrue(insertedCustomer.isLoaded());
+            assertTrue(insertedCustomer.deeplyEquals(customerDAO.read(insertedCustomer.getId())));
             customersInDB.add(insertedCustomer);
         }
-        Customer testCustomerInDB = customerDAO.insert(testCustomer);
-
-        assertNotEquals(testCustomer, testCustomerInDB);
-        assertEquals(testCustomer.getFirstName(), testCustomerInDB.getFirstName());
-        assertEquals(testCustomer.getLastName(), testCustomerInDB.getLastName());
-        assertEquals(testCustomerInDB, customerDAO.read(testCustomerInDB.getId()));
     }
 
     @Test
@@ -159,64 +154,83 @@ public class CustomerDAOImplTest extends AbstractDAOTest<Customer>
         assertEquals(null, customerDAO.read(testCustomer.getId()));
 
         Customer testCustomerInDB = customerDAO.insert(testCustomer);
-        assertEquals(testCustomerInDB, customerDAO.read(testCustomerInDB.getId()));
+        Customer testCustomerFromDB = customerDAO.read(testCustomerInDB.getId());
+        assertEquals(testCustomerInDB, testCustomerFromDB);
+        assertTrue(testCustomerInDB.deeplyEquals(testCustomerFromDB));
+        assertTrue(testCustomerInDB.isLoaded());
+        
 
-        assertEquals(testCustomerInDB, customerDAO.read(testCustomerInDB.getId()));
     }
 
-//    @Test
+    @Test
     public void readAllCustomersFromDB()
     {
+        List<Customer> insertedCustomers = new ArrayList<>();
+        
         for (Customer c : rawTestCustomers)
         {
-            customerDAO.insert(c);
+            insertedCustomers.add(customerDAO.insert(c));
         }
 
         customersInDB = ((CustomerDAO) customerDAO).read();
 
         assertEquals(1000, customersInDB.size());
+        assertTrue(insertedCustomers.containsAll(customersInDB));
+        
+        for(Customer c : customersInDB)
+        {
+            assertTrue(c.isLoaded());
+            assertTrue(c.deeplyEquals(customerDAO.read(c.getId())));
+            assertEquals(c, customerDAO.read(c.getId()));
+        }
     }
 
-//    @Test
+    @Test
     public void readAllCustomersWithMatchingFirstNameFromDB()
     {
         Set<String> firstNames = new HashSet<>();
+        List<Customer> insertedCustomers = new ArrayList<>();
 
         for (Customer c : rawTestCustomers)
         {
-            customerDAO.insert(c);
+            insertedCustomers.add(customerDAO.insert(c));
             firstNames.add(c.getFirstName());
         }
 
         for (String s : firstNames)
         {
             customersInDB = ((CustomerDAO) customerDAO).readFirstName(s);
+            assertTrue(insertedCustomers.containsAll(customersInDB));
 
             for (Customer c : customersInDB)
             {
                 assertEquals(s, c.getFirstName());
+                assertTrue(c.isLoaded());
             }
         }
     }
 
-//    @Test
+    @Test
     public void readAllCustomersWithMatchingLastNameFromDB()
     {
         Set<String> lastNames = new HashSet<>();
+        List<Customer> insertedCustomers = new ArrayList<>();
 
         for (Customer c : rawTestCustomers)
         {
-            customerDAO.insert(c);
+            insertedCustomers.add(customerDAO.insert(c));
             lastNames.add(c.getLastName());
         }
 
         for (String s : lastNames)
         {
             customersInDB = ((CustomerDAO) customerDAO).readLastName(s);
+            assertTrue(insertedCustomers.containsAll(customersInDB));
 
             for (Customer c : customersInDB)
             {
                 assertEquals(s, c.getLastName());
+                assertTrue(c.isLoaded());
             }
         }
     }

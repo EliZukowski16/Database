@@ -41,6 +41,7 @@ public abstract class AbstractDAOTest<T extends DomainObject>
         T tUpdated = dao.update(tCloned);
         
         assertEquals(tUpdated, tFromDB);
+        assertTrue(tUpdated.deeplyEquals(tFromDB));
         
         assertTrue(dao.delete(tUpdated.getId()));
         

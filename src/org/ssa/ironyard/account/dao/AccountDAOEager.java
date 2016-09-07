@@ -10,13 +10,11 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import org.ssa.ironyard.account.model.Account;
-import org.ssa.ironyard.account.orm.AccountORM;
 import org.ssa.ironyard.account.orm.AccountORMEager;
-import org.ssa.ironyard.customer.model.Customer;
 
 public class AccountDAOEager extends AbstractAccountDAO implements AccountDAO
 {
-    protected AccountDAOEager(DataSource datasource)
+    public AccountDAOEager(DataSource datasource)
     {
         super(datasource, new AccountORMEager());
     }

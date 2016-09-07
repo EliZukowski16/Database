@@ -56,10 +56,7 @@ public class Customer extends AbstractDomainObject implements DomainObject
     {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((firstName == null) ? 0 : firstName.hashCode());
         result = prime * result + ((id == null) ? 0 : id.hashCode());
-        result = prime * result + ((lastName == null) ? 0 : lastName.hashCode());
-        result = prime * result + ((loaded == null) ? 0 : loaded.hashCode());
         return result;
     }
 

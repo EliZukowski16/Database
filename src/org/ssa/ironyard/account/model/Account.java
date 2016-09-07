@@ -97,11 +97,8 @@ public class Account extends AbstractDomainObject implements DomainObject
     {
         final int prime = 31;
         int result = 1;
-        result = prime * result + ((balance == null) ? 0 : balance.hashCode());
-        result = prime * result + ((customer == null) ? 0 : customer.hashCode());
         result = prime * result + ((id == null) ? 0 : id.hashCode());
-        result = prime * result + ((type == null) ? 0 : type.hashCode());
-        result = prime * result + ((loaded == null) ? 0 : loaded.hashCode());
+
         return result;
     }
 

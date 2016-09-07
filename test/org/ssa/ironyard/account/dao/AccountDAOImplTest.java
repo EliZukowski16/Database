@@ -138,6 +138,8 @@ public class AccountDAOImplTest extends AbstractDAOTest<Account>
         assertEquals(testAccount.getType(), testAccountInDB.getType());
         assertEquals(testAccount.getBalance(), testAccountInDB.getBalance());
         assertEquals(testAccountInDB, accountDAO.read(testAccountInDB.getId()));
+        assertTrue(testAccountInDB.isLoaded());
+        assertTrue(testAccountInDB.deeplyEquals(accountDAO.read(testAccountInDB.getId())));
 
         customerDAO.delete(testCustomerInDB.getId());
     }
@@ -198,9 +200,10 @@ public class AccountDAOImplTest extends AbstractDAOTest<Account>
         assertEquals(null, accountDAO.read(testAccount.getId()));
 
         Account testAccountInDB = accountDAO.insert(testAccount);
-        assertEquals(testAccountInDB, accountDAO.read(testAccountInDB.getId()));
-
-        assertEquals(testAccountInDB, accountDAO.read(testAccountInDB.getId()));
+        Account testAccountFromDB = accountDAO.read(testAccountInDB.getId());
+        assertEquals(testAccountInDB, testAccountFromDB);
+        assertTrue(testAccountFromDB.isLoaded());
+        assertTrue(testAccountInDB.deeplyEquals(testAccountFromDB));
 
         customerDAO.delete(testCustomerInDB.getId());
     }
